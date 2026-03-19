@@ -1,0 +1,27 @@
+trigger:
+  - main
+
+pool:
+  name: agent-pool
+
+steps:
+  
+  - task: TerraformTaskV3@3
+    inputs:
+      provider: 'azurerm'
+      command: 'init'
+      backendServiceArm: 'azure-connection'
+
+  - task: PipelineTerraformTask@5
+    inputs:
+      provider: 'azurerm'
+      command: 'plan'
+      environmentServiceNameAzureRM: 'azure-connection'
+      environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
+
+  - task: PipelineTerraformTask@5
+    inputs:
+      provider: 'azurerm'
+      command: 'apply'
+      environmentServiceNameAzureRM: 'azure-connection'
+      environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
