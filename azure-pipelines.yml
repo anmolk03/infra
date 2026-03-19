@@ -3,25 +3,42 @@ trigger:
 
 pool:
   name: self-hosted
-
-steps:
   
-  - task: TerraformTaskV3@3
-    inputs:
-      provider: 'azurerm'
-      command: 'init'
-      backendServiceArm: 'azure-connection'
+steps:
+- script: |
+    terraform init
+    terraform validate
+  displayName: 'Terraform Init and Validate'
 
-  - task: PipelineTerraformTask@5
-    inputs:
-      provider: 'azurerm'
-      command: 'plan'
-      environmentServiceNameAzureRM: 'azure-connection'
-      environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
+- script: terraform plan -out=tfplan"
+  displayName: 'Terraform Plan'
 
-  - task: PipelineTerraformTask@5
-    inputs:
-      provider: 'azurerm'
-      command: 'apply'
-      environmentServiceNameAzureRM: 'azure-connection'
-      environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
+- script: terraform apply -input=false tfplan
+  displayName: 'Terraform Apply'
+  condition: succeeded()
+  
+  
+  
+
+
+# steps:
+  
+#   - task: TerraformTaskV3@3
+#     inputs:
+#       provider: 'azurerm'
+#       command: 'init'
+#       backendServiceArm: 'azure-connection'
+
+#   - task: PipelineTerraformTask@5
+#     inputs:
+#       provider: 'azurerm'
+#       command: 'plan'
+#       environmentServiceNameAzureRM: 'azure-connection'
+#       environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
+
+#   - task: PipelineTerraformTask@5
+#     inputs:
+#       provider: 'azurerm'
+#       command: 'apply'
+#       environmentServiceNameAzureRM: 'azure-connection'
+#       environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
