@@ -8,7 +8,7 @@ terraform {
 }
 provider "azurerm" {
   features {}
-  subscription_id = "xyz"
+  subscription_id = "ce1fe2d6-685f-4758-a44e-d005c9d82354"
 }
 
 module "storage" {
