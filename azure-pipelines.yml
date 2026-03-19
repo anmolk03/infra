@@ -10,7 +10,7 @@ steps:
     terraform validate
   displayName: 'Terraform Init and Validate'
 
-- script: terraform plan -out=tfplan"
+- script: terraform plan -out=tfplan
   displayName: 'Terraform Plan'
 
 - script: terraform apply -input=false tfplan
