@@ -1,43 +1,25 @@
-# 1. Generate random suffix for unique DNS label
+# 1. Generate random suffix for unique naming
 resource "random_string" "suffix" {
   length  = 4
   upper   = false
-  numeric = true # 'number' is deprecated in newer versions, use 'numeric'
+  numeric = true 
   special = false
 }
 
-# 2. Corrected Network Profile
-resource "azurerm_network_profile" "backend_aci_profile" {
-  name                = "backend-aci-np"
-  location            = "centralindia"
-  resource_group_name = "playgroundcleansub0"
-
-  container_network_interface {
-    name = "backend-aci-nic"
-
-    # THIS BLOCK IS MANDATORY
-    ip_configuration {
-      name      = "internal"
-      subnet_id = "/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet/subnets/subnet-aci"
-    }
-  }
-}
-
-# 3. Corrected Container Group
+# 2. Modern Container Group (Private VNet Injection)
 resource "azurerm_container_group" "backend" {
-  name                = "employee-backend-aci"
+  # Added suffix to name for uniqueness
+  name                = "employee-backend-aci-${random_string.suffix.result}"
   location            = "centralindia"
   resource_group_name = "playgroundcleansub0"
   os_type             = "Linux"
   
-  # Optional: dns_name_label is usually for Public IPs. 
-  # For Private IPs in a VNet, it may be ignored, but keeping it doesn't hurt.
-  dns_name_label      = "backend-aci-${random_string.suffix.result}" 
+  # REMOVED: dns_name_label (This fixes the 'DnsNameLabelNotSupportedForInternalIPAddress' error)
   
   ip_address_type     = "Private"
 
-  # REMOVED: subnet_ids (This causes conflicts when using network_profile_id)
-  network_profile_id  = azurerm_network_profile.backend_aci_profile.id
+  # UPDATED: Direct subnet reference (This fixes the deprecation and 400 error)
+  subnet_ids          = [azurerm_subnet.aci_subnet.id]
 
   container {
     name   = "backend"
@@ -56,10 +38,7 @@ resource "azurerm_container_group" "backend" {
       DBDIALECT        = "postgres"
       DBNAME           = "employeedb"
       DBUSERNAME       = azurerm_postgresql_flexible_server.db.administrator_login
-      
-      # NOTE: Ensure this matches the attribute name in your postgres resource
       DBPASSWORD       = azurerm_postgresql_flexible_server.db.administrator_password
-      
       NODE_ENV         = "production"
       APPLICATION_HOST = "0.0.0.0"
       APPLICATION_PORT = "80"
