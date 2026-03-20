@@ -10,7 +10,7 @@ variables:
   resourceGroup: 'playgroundcleansub0'
   storageAccount: 'tfstatesa123'
   container: 'tfstate'
-  tfstateKey: 'acr.terraform.tfstate'
+  tfstateKey: 'terraform.tfstate'
 
 steps:
 # Ensure Terraform is available on the agent
