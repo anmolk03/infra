@@ -114,19 +114,22 @@ resource "azurerm_postgresql_flexible_server" "db" {
   administrator_login = "adminuser"
   administrator_password = "ComplexPassword123!"
 
-  sku_name   = "B_Standard_B1ms"
+  sku_name   = "B_Standard_B1ms"  # Burstable tier, works in older provider
   storage_mb = 32768
-
 
   backup_retention_days = 7
 
+  tags = {
+    environment = "dev"
+  }
 }
 
+# PostgreSQL Flexible Server Database
 resource "azurerm_postgresql_flexible_server_database" "db" {
   name      = "employeedb"
   server_id = azurerm_postgresql_flexible_server.db.id
   charset   = "UTF8"
-  collation = "English_United States.1252"
+  collation = "en_US.UTF-8"  # Linux-style, valid for PostgreSQL
 }
 
 
