@@ -1,44 +1,48 @@
 trigger:
-  - main
+- main
 
 pool:
-  name: self-hosted
-  
+  name: 'self-hosted' # Replace with your self-hosted pool name if different
+
+variables:
+  # 1. Update these to match your Portal settings
+  serviceConnection: 'azure-svc-conn'
+  resourceGroup: 'playgroundcleansub0'
+  storageAccount: 'tfstatesa123'
+  container: 'tfstate'
+  tfstateKey: 'acr.terraform.tfstate'
+
 steps:
-- script: |
-    terraform init
-    terraform validate
-  displayName: 'Terraform Init and Validate'
+# Ensure Terraform is available on the agent
+- task: TerraformInstaller@1
+  inputs:
+    terraformVersion: 'latest'
 
-- script: terraform plan -out=tfplan
+# 1. Initialize (Connects to the Storage Account Backend)
+- task: TerraformTaskV4@4
+  displayName: 'Terraform Init'
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    backendServiceArm: $(serviceConnection)
+    backendAzureRmResourceGroupName: $(resourceGroup)
+    backendAzureRmStorageAccountName: $(storageAccount)
+    backendAzureRmContainerName: $(container)
+    backendAzureRmKey: $(tfstateKey)
+
+# 2. Plan (Dry run to see what will be created)
+- task: TerraformTaskV4@4
   displayName: 'Terraform Plan'
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    environmentServiceNameAzureRM: $(serviceConnection)
 
-- script: terraform apply -input=false tfplan
+# 3. Apply (Actually creates the ACR)
+- task: TerraformTaskV4@4
   displayName: 'Terraform Apply'
-  condition: succeeded()
-  
-  
-  
-
-
-# steps:
-  
-#   - task: TerraformTaskV3@3
-#     inputs:
-#       provider: 'azurerm'
-#       command: 'init'
-#       backendServiceArm: 'azure-connection'
-
-#   - task: PipelineTerraformTask@5
-#     inputs:
-#       provider: 'azurerm'
-#       command: 'plan'
-#       environmentServiceNameAzureRM: 'azure-connection'
-#       environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
-
-#   - task: PipelineTerraformTask@5
-#     inputs:
-#       provider: 'azurerm'
-#       command: 'apply'
-#       environmentServiceNameAzureRM: 'azure-connection'
-#       environmentAzureRmOverrideSubscriptionID: 'ce1fe2d6-685f-4758-a44e-d005c9d82354'
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    environmentServiceNameAzureRM: $(serviceConnection)
+    commandOptions: '-auto-approve'
