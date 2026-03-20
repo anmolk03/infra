@@ -29,6 +29,7 @@ resource "azurerm_container_group" "backend" {
 
   container {
     name   = "backend"
+    # It's best practice to use the reference here too
     image  = "${azurerm_container_registry.acr.login_server}/backend:latest"
     cpu    = 0.5
     memory = 1.0
