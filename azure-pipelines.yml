@@ -16,7 +16,7 @@ steps:
 # Ensure Terraform is available on the agent
 - task: TerraformInstaller@1
   inputs:
-    terraformVersion: '1.6.7'
+    terraformVersion: 'latest'
 
 # 1. Initialize (Connects to the Storage Account Backend)
 - task: TerraformTaskV4@4
