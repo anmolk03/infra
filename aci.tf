@@ -18,7 +18,7 @@ resource "azurerm_network_profile" "backend_aci_profile" {
     # THIS BLOCK IS MANDATORY
     ip_configuration {
       name      = "internal"
-      subnet_id = "/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet/subnets/aci_subnet"
+      subnet_id = "/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet/subnets/subnet-aci"
     }
   }
 }
