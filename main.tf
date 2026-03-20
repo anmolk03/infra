@@ -146,6 +146,13 @@ resource "azurerm_postgresql_flexible_server" "db" {
   tags = {
     environment = "dev"
   }
+
+  lifecycle {
+    ignore_changes = [
+      zone,
+      high_availability[0].standby_availability_zone
+    ]
+  }
 }
 
 # PostgreSQL Flexible Server Database
