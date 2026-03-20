@@ -99,7 +99,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
   private_cluster_enabled = true
 
   network_profile {
-    network_plugin = "azure"
+    network_plugin     = "azure"
+    # ADD THESE THREE LINES:
+    service_cidr       = "172.16.0.0/16"
+    dns_service_ip     = "172.16.0.10"
+    docker_bridge_cidr = "172.17.0.1/16"
   }
 }
 
@@ -132,6 +136,7 @@ resource "azurerm_postgresql_flexible_server" "db" {
   
   # Connect to the DNS Zone you just made
   private_dns_zone_id = azurerm_private_dns_zone.postgres.id
+  public_network_access_enabled = false
   
   # Ensure this server waits for the DNS link to be ready
   depends_on = [azurerm_private_dns_zone_virtual_network_link.postgres_link]
