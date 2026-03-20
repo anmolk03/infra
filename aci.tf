@@ -1,11 +1,43 @@
+# 1. Generate random suffix for unique DNS label
+resource "random_string" "suffix" {
+  length  = 4
+  upper   = false
+  numeric = true # 'number' is deprecated in newer versions, use 'numeric'
+  special = false
+}
+
+# 2. Corrected Network Profile
+resource "azurerm_network_profile" "backend_aci_profile" {
+  name                = "backend-aci-np"
+  location            = "centralindia"
+  resource_group_name = "playgroundcleansub0"
+
+  container_network_interface {
+    name = "backend-aci-nic"
+
+    # THIS BLOCK IS MANDATORY
+    ip_configuration {
+      name      = "internal"
+      subnet_id = "/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet/subnets/aci_subnet"
+    }
+  }
+}
+
+# 3. Corrected Container Group
 resource "azurerm_container_group" "backend" {
   name                = "employee-backend-aci"
   location            = "centralindia"
   resource_group_name = "playgroundcleansub0"
   os_type             = "Linux"
-  dns_name_label      = "backend-aci-${random_string.suffix.result}" # optional for internal dns
-  ip_address_type     = "Private"  # private IP only
-  subnet_ids          = ["/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet/subnets/aci_subnet"]
+  
+  # Optional: dns_name_label is usually for Public IPs. 
+  # For Private IPs in a VNet, it may be ignored, but keeping it doesn't hurt.
+  dns_name_label      = "backend-aci-${random_string.suffix.result}" 
+  
+  ip_address_type     = "Private"
+
+  # REMOVED: subnet_ids (This causes conflicts when using network_profile_id)
+  network_profile_id  = azurerm_network_profile.backend_aci_profile.id
 
   container {
     name   = "backend"
@@ -24,12 +56,14 @@ resource "azurerm_container_group" "backend" {
       DBDIALECT        = "postgres"
       DBNAME           = "employeedb"
       DBUSERNAME       = azurerm_postgresql_flexible_server.db.administrator_login
-      DBPASSWORD       = azurerm_postgresql_flexible_server.db.administrator_login_password
+      
+      # NOTE: Ensure this matches the attribute name in your postgres resource
+      DBPASSWORD       = azurerm_postgresql_flexible_server.db.administrator_password
+      
       NODE_ENV         = "production"
       APPLICATION_HOST = "0.0.0.0"
       APPLICATION_PORT = "80"
-      # Only frontend subnet allowed
-      WHITELIST_URLS   = "10.0.4.0/24"  # Replace with your frontend AKS subnet CIDR
+      WHITELIST_URLS   = "10.0.4.0/24" 
     }
   }
 
@@ -37,28 +71,4 @@ resource "azurerm_container_group" "backend" {
     Environment = "Production"
     Project     = "EmployeeApp"
   }
-
-  network_profile_id = azurerm_network_profile.backend_aci_profile.id
-}
-
-# Optional: network profile for ACI in your VNet
-resource "azurerm_network_profile" "backend_aci_profile" {
-  name                = "backend-aci-np"
-  location            = "centralindia"
-  resource_group_name = "playgroundcleansub0"
-
-  container_network_interface {
-    name                      = "backend-aci-nic"
-    subnet_id                 = "/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet/subnets/aci_subnet"
-    ip_configuration_name     = "internal"
-    private_ip_address_allocation = "Dynamic"
-  }
-}
-
-# Generate random suffix for unique DNS label
-resource "random_string" "suffix" {
-  length  = 4
-  upper   = false
-  number  = true
-  special = false
 }
