@@ -122,12 +122,22 @@ resource "azurerm_postgresql_flexible_server" "db" {
   public_network_access_enabled = false
 }
 
+resource "azurerm_postgresql_flexible_server_database" "db" {
+  name                = "employeedb"
+  resource_group_name = azurerm_postgresql_flexible_server.db.resource_group_name
+  server_name         = azurerm_postgresql_flexible_server.db.name
+  charset             = "UTF8"
+  collation           = "English_United States.1252"
+}
+
+/*
 resource "azurerm_postgresql_flexible_database" "db" {
   name      = "employeedb"
   server_id = azurerm_postgresql_flexible_server.db.id
   charset   = "UTF8"
   collation = "en_US.utf8"
 }
+*/
 
 
 # Key Vault
