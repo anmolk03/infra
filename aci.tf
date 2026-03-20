@@ -21,9 +21,15 @@ resource "azurerm_container_group" "backend" {
   # UPDATED: Direct subnet reference (This fixes the deprecation and 400 error)
   subnet_ids          = [azurerm_subnet.aci_subnet.id]
 
+  image_registry_credential {
+    server   = azurerm_container_registry.acr.login_server
+    username = azurerm_container_registry.acr.admin_username
+    password = azurerm_container_registry.acr.admin_password
+  }
+
   container {
     name   = "backend"
-    image  = "mydemoacr2026asdfg.azurecr.io/backend:latest"
+    image  = "${azurerm_container_registry.acr.login_server}/backend:latest"
     cpu    = 0.5
     memory = 1.0
 
