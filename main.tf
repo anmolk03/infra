@@ -1,21 +1,29 @@
+##Create storage for state via portal
+
 terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>4.28.0"
+      version = "~> 3.0"
     }
   }
-}
-provider "azurerm" {
-  features {}
-  subscription_id = "ce1fe2d6-685f-4758-a44e-d005c9d82354"
+
+  backend "azurerm" {
+    resource_group_name  = "playgroundcleansub0"
+    storage_account_name = "tfstatesa123"
+    container_name       = "tfstate" 
+    key                  = terraform.tfstate# This is the name of the state file it will create
+  }
 }
 
-module "storage" {
-  source   = "./modules/storageAccount"
-  name     = "storageaftest001"
-  location = "japaneast"
-  resource_group_name = "playgroundcleansub0"
-  account_tier        = "Standard"
-  account_replication = "LRS"
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_container_registry" "acr" {
+  name                = "mydemoacr2026" 
+  resource_group_name = "playgroundcleansub0"e
+  location            = "centralindia"
+  sku                 = "Standard"
+  admin_enabled       = true
 }
