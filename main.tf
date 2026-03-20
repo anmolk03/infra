@@ -28,7 +28,7 @@ provider "azurerm" {
 }
 
 resource "azurerm_container_registry" "acr" {
-  name                = "mydemoacr2026" 
+  name                = "mydemoacr2026asdfg" 
   resource_group_name = "playgroundcleansub0"
   location            = "centralindia"
   sku                 = "Standard"
