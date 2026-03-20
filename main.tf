@@ -11,7 +11,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+      version = ">= 3.70.0"
     }
   }
 
@@ -114,7 +114,7 @@ resource "azurerm_postgresql_flexible_server" "db" {
   administrator_login    = "adminuser"
   administrator_password = "ComplexPassword123!"
 
-  sku_name   = "Standard_B1ms"
+  sku_name   = "B_Standard_B1ms"
   version    = "14"
   storage_mb = 32768
 
