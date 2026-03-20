@@ -29,7 +29,7 @@ provider "azurerm" {
 
 resource "azurerm_container_registry" "acr" {
   name                = "mydemoacr2026" 
-  resource_group_name = "playgroundcleansub0"e
+  resource_group_name = "playgroundcleansub0"
   location            = "centralindia"
   sku                 = "Standard"
   admin_enabled       = true
