@@ -41,7 +41,7 @@ resource "azurerm_subnet" "aks_subnet" {
   name                 = "subnet-aks"
   resource_group_name  = "playgroundcleansub0"
   virtual_network_name = "agentpool-vnet"  
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = ["10.0.4.0/24"]
 }
 
 resource "azurerm_subnet" "aci_subnet" {
@@ -103,7 +103,19 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 }
 
+# 1. Create the Private DNS Zone (Must end in .postgres.database.azure.com)
+resource "azurerm_private_dns_zone" "postgres" {
+  name                = "mypostgres.private.postgres.database.azure.com"
+  resource_group_name = "playgroundcleansub0"
+}
 
+# 2. Link the DNS Zone to your Virtual Network
+resource "azurerm_private_dns_zone_virtual_network_link" "postgres_link" {
+  name                  = "postgres-vnet-link"
+  private_dns_zone_name = azurerm_private_dns_zone.postgres.name
+  virtual_network_id    = "/subscriptions/ce1fe2d6-685f-4758-a44e-d005c9d82354/resourceGroups/playgroundcleansub0/providers/Microsoft.Network/virtualNetworks/agentpool-vnet"
+  resource_group_name   = "playgroundcleansub0"
+}
 
 # PostgreSQL Flexible Server + DB
 resource "azurerm_postgresql_flexible_server" "db" {
@@ -117,7 +129,12 @@ resource "azurerm_postgresql_flexible_server" "db" {
   sku_name   = "B_Standard_B1ms"  # Burstable tier, works in older provider
   storage_mb = 32768
   delegated_subnet_id = azurerm_subnet.postgres_subnet.id
-  private_dns_zone_id = null # Set to null for now or provide a private DNS zone
+  
+  # Connect to the DNS Zone you just made
+  private_dns_zone_id = azurerm_private_dns_zone.postgres.id
+  
+  # Ensure this server waits for the DNS link to be ready
+  depends_on = [azurerm_private_dns_zone_virtual_network_link.postgres_link]
 
   backup_retention_days = 7
 
@@ -191,7 +208,7 @@ resource "azurerm_network_security_group" "aci_nsg" {
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
-    source_address_prefix      = "10.0.1.0/24" # AKS subnet
+    source_address_prefix      = "10.0.4.0/24" # AKS subnet
     destination_port_range     = "80"
   }
 
