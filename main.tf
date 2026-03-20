@@ -154,7 +154,7 @@ resource "azurerm_postgresql_flexible_database" "db" {
   name      = "employeedb"
   server_id = azurerm_postgresql_flexible_server.db.id
   charset   = "UTF8"
-  collation = "en_US.UTF-8"
+  collation = "en_US.utf8"
 }
 */
 
