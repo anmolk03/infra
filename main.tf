@@ -104,8 +104,33 @@ resource "azurerm_kubernetes_cluster" "aks" {
 }
 
 
-# PostgreSQL Flexible Server + DB
 
+# PostgreSQL Flexible Server + DB
+resource "azurerm_postgresql_flexible_server" "db" {
+  name                = "mydbserver"
+  resource_group_name = "playgroundcleansub0"
+  location            = "centralindia"
+  version             = "13"
+  administrator_login = "adminuser"
+  administrator_password = "ComplexPassword123!"
+
+  sku_name   = "B_Standard_B1ms"
+  storage_mb = 32768
+
+  high_availability     = "Disabled"
+  backup_retention_days = 7
+  geo_redundant_backup  = "Disabled"
+}
+
+resource "azurerm_postgresql_flexible_server_database" "db" {
+  name      = "employeedb"
+  server_id = azurerm_postgresql_flexible_server.db.id
+  charset   = "UTF8"
+  collation = "English_United States.1252"
+}
+
+
+/*
 resource "azurerm_postgresql_flexible_server" "db" {
   name                = "employeedbserver2026"
   resource_group_name = "playgroundcleansub0"
@@ -122,15 +147,6 @@ resource "azurerm_postgresql_flexible_server" "db" {
   public_network_access_enabled = false
 }
 
-resource "azurerm_postgresql_flexible_server_database" "db" {
-  name                = "employeedb"
-  resource_group_name = azurerm_postgresql_flexible_server.db.resource_group_name
-  server_name         = azurerm_postgresql_flexible_server.db.name
-  charset             = "UTF8"
-  collation           = "English_United States.1252"
-}
-
-/*
 resource "azurerm_postgresql_flexible_database" "db" {
   name      = "employeedb"
   server_id = azurerm_postgresql_flexible_server.db.id
