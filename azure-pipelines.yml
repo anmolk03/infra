@@ -29,6 +29,7 @@ steps:
     backendAzureRmStorageAccountName: $(storageAccount)
     backendAzureRmContainerName: $(container)
     backendAzureRmKey: $(tfstateKey)
+    initOptions: '-upgrade'
 
 # 2. Plan (Dry run to see what will be created)
 - task: TerraformTaskV4@4
